@@ -1,0 +1,46 @@
+CREATE TABLE users (
+ id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(120) NOT NULL,
+ email VARCHAR(190) NOT NULL UNIQUE,
+ password_hash VARCHAR(255) NOT NULL,
+ created_at TIMESTAMP NOT NULL
+);
+CREATE TABLE books (
+ id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ title VARCHAR(200) NOT NULL,
+ author VARCHAR(160) NOT NULL,
+ price DECIMAL(10,2) NOT NULL,
+ stock INT NOT NULL,
+ description VARCHAR(1000)
+);
+CREATE TABLE carts (
+ id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT NOT NULL UNIQUE,
+ CONSTRAINT fk_cart_user FOREIGN KEY(user_id) REFERENCES users(id)
+);
+CREATE TABLE cart_items (
+ id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ cart_id BIGINT NOT NULL,
+ book_id BIGINT NOT NULL,
+ quantity INT NOT NULL,
+ CONSTRAINT fk_cart_item_cart FOREIGN KEY(cart_id) REFERENCES carts(id),
+ CONSTRAINT fk_cart_item_book FOREIGN KEY(book_id) REFERENCES books(id),
+ CONSTRAINT uq_cart_book UNIQUE(cart_id,book_id)
+);
+CREATE TABLE orders (
+ id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT NOT NULL,
+ total DECIMAL(12,2) NOT NULL,
+ status VARCHAR(30) NOT NULL,
+ created_at TIMESTAMP NOT NULL,
+ CONSTRAINT fk_order_user FOREIGN KEY(user_id) REFERENCES users(id)
+);
+CREATE TABLE order_items (
+ id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ order_id BIGINT NOT NULL,
+ book_id BIGINT NOT NULL,
+ quantity INT NOT NULL,
+ unit_price DECIMAL(10,2) NOT NULL,
+ CONSTRAINT fk_order_item_order FOREIGN KEY(order_id) REFERENCES orders(id),
+ CONSTRAINT fk_order_item_book FOREIGN KEY(book_id) REFERENCES books(id)
+);
