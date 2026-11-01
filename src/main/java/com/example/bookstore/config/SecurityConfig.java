@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
-
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 
@@ -59,30 +58,21 @@ public class SecurityConfig {
                 environment.acceptsProfiles(Profiles.of("dev"));
 
         http
-                // JWT-based stateless authentication
                 .csrf(csrf -> csrf.disable())
-
-                // CORS configuration
                 .cors(cors ->
                         cors.configurationSource(corsConfigurationSource())
                 )
-
-                // No HTTP session required
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
-
-                // Authorization rules
                 .authorizeHttpRequests(auth -> {
 
-                    // Allow CORS preflight requests
                     auth.requestMatchers(
                             HttpMethod.OPTIONS, "/**"
                     ).permitAll();
 
-                    // Public endpoints
                     auth.requestMatchers(
                             "/api/auth/**",
                             "/swagger-ui/**",
@@ -91,34 +81,25 @@ public class SecurityConfig {
                             "/error"
                     ).permitAll();
 
-                    // H2 console only in development
                     if (devProfile) {
                         auth.requestMatchers(
                                 "/h2-console/**"
                         ).permitAll();
                     }
 
-                    // Public book browsing
                     auth.requestMatchers(
                             HttpMethod.GET,
                             "/api/books",
                             "/api/books/**"
                     ).permitAll();
 
-                    // All remaining endpoints require authentication
                     auth.anyRequest().authenticated();
                 })
-
-                // H2 console requires same-origin frames
                 .headers(headers -> {
-                    if (devProfile) {
                         headers.frameOptions(frame ->
                                 frame.sameOrigin()
                         );
-                    }
                 })
-
-                // Authentication and authorization error handling
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(
                                 new HttpStatusEntryPoint(
@@ -131,8 +112,6 @@ public class SecurityConfig {
                                 )
                         )
                 )
-
-                // Register JWT filter before username/password filter
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -147,32 +126,20 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(allowedOrigins);
-
         configuration.setAllowedMethods(List.of(
-                "GET",
-                "POST",
-                "PUT",
-                "PATCH",
-                "DELETE",
-                "OPTIONS"
+                "GET", "POST", "PUT", "PATCH",
+                "DELETE", "OPTIONS"
         ));
-
         configuration.setAllowedHeaders(List.of(
-                "Authorization",
-                "Content-Type"
+                "Authorization", "Content-Type"
         ));
-
         configuration.setAllowCredentials(false);
-
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration(
-                "/**",
-                configuration
-        );
+        source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }
@@ -186,7 +153,6 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration configuration)
             throws Exception {
-
         return configuration.getAuthenticationManager();
     }
 }
